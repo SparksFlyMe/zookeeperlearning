@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author kaizhang
+ * 客户端（作为监控）
+ */
 public class DistributeClient {
 
     public static void main(String[] args) throws IOException, KeeperException, InterruptedException {
@@ -19,7 +23,7 @@ public class DistributeClient {
         client.getConnect();
 
         // 2 注册监听
-        client.getChlidren();
+        client.getChildren();
 
         // 3 业务逻辑处理
         client.business();
@@ -30,16 +34,16 @@ public class DistributeClient {
         Thread.sleep(Long.MAX_VALUE);
     }
 
-    private void getChlidren() throws KeeperException, InterruptedException {
+    private void getChildren() throws KeeperException, InterruptedException {
 
-        List<String> children = zkClient.getChildren("/app1", true);
+        List<String> children = zkClient.getChildren("/servers", true);
 
         // 存储服务器节点主机名称集合
         ArrayList<String> hosts = new ArrayList<>();
 
         for (String child : children) {
 
-            byte[] data = zkClient.getData("/app1/" + child, false, null);
+            byte[] data = zkClient.getData("/servers/" + child, false, null);
 
             hosts.add(new String(data));
         }
@@ -49,22 +53,20 @@ public class DistributeClient {
 
     }
 
-    private String connectString = "192.168.17.101:2181,192.168.17.102:2181,192.168.17.103:2181";
-    private int sessionTimeout = 2000;
+    private static final String CONNECT_STRING = "192.168.17.101:2181,192.168.17.102:2181,192.168.17.103:2181";
+    private static final int SESSION_TIMEOUT = 20000;
     private ZooKeeper zkClient;
 
     private void getConnect() throws IOException {
 
-        zkClient = new ZooKeeper(connectString, sessionTimeout, new Watcher() {
+        zkClient = new ZooKeeper(CONNECT_STRING, SESSION_TIMEOUT, new Watcher() {
 
             @Override
             public void process(WatchedEvent event) {
 
                 try {
-                    getChlidren();
-                } catch (KeeperException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
+                    getChildren();
+                } catch (KeeperException | InterruptedException e) {
                     e.printStackTrace();
                 }
             }

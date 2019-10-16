@@ -9,6 +9,10 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 
+/**
+ * @author kaizhang
+ * 服务器（其实也是Zookeeper客户端）
+ */
 public class DistributeServer {
 
 	public static void main(String[] args) throws Exception {
@@ -19,7 +23,7 @@ public class DistributeServer {
 		server.getConnect();
 		
 		// 2 注册节点
-		server.regist(args[0]);
+		server.register(args[0]);
 		
 		// 3 业务逻辑处理
 		server.business();
@@ -30,21 +34,21 @@ public class DistributeServer {
 		Thread.sleep(Long.MAX_VALUE);
 	}
 
-	private void regist(String hostname) throws KeeperException, InterruptedException {
+	private void register(String hostname) throws KeeperException, InterruptedException {
 		
 		String path = zkClient.create("/servers/server", hostname.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 		
-		System.out.println(hostname +"is online ");
+		System.out.println(hostname +" is online ");
 		
 	}
 
-	private String connectString = "hadoop102:2181,hadoop103:2181,hadoop104:2181";
-	private int sessionTimeout = 2000;
+	private static final String CONNECT_STRING = "192.168.17.101:2181,192.168.17.102:2181,192.168.17.103:2181";
+	private static final int SESSION_TIMEOUT = 2000;
 	private ZooKeeper zkClient;
 
 	private void getConnect() throws IOException {
 		
-		zkClient = new ZooKeeper(connectString , sessionTimeout , new Watcher() {
+		zkClient = new ZooKeeper(CONNECT_STRING , SESSION_TIMEOUT , new Watcher() {
 			
 			@Override
 			public void process(WatchedEvent event) {
